@@ -5,5 +5,5 @@ import (
 )
 
 const (
-	StateSendCloth userstate.UserState = iota
+	StateWaitPhoto userstate.UserState = iota
 )
