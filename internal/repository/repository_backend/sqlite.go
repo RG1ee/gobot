@@ -9,7 +9,7 @@ import (
 )
 
 type Sqlite struct {
-	db_name string
+	DB_name string
 	db      *gorm.DB
 }
 
