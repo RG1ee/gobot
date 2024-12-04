@@ -73,6 +73,8 @@ github.com/avi-gecko/fsm v0.0.0-20241201154944-15a3f7e0948a h1:0iOzgj3HBUtdmKCod
 github.com/avi-gecko/fsm v0.0.0-20241201154944-15a3f7e0948a/go.mod h1:2jOCYhpNy45m86gNfsOqin3DNUO9CcIH2sIgDjWGLYI=
 github.com/avi-gecko/fsm v0.0.0-20241201172257-a25ec0788420 h1:Ny4UPTyl3yqTU97EGzmR1V6SSNxgw+RpkQPeI5woZHE=
 github.com/avi-gecko/fsm v0.0.0-20241201172257-a25ec0788420/go.mod h1:2jOCYhpNy45m86gNfsOqin3DNUO9CcIH2sIgDjWGLYI=
+github.com/avi-gecko/fsm v0.0.0-20241204174237-9e81102913b2 h1:08xxAT6t7grcJkM2RE9MM6GEBTq5WdPsjvWwlrTY/9Y=
+github.com/avi-gecko/fsm v0.0.0-20241204174237-9e81102913b2/go.mod h1:2jOCYhpNy45m86gNfsOqin3DNUO9CcIH2sIgDjWGLYI=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=

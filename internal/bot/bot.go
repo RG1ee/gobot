@@ -22,7 +22,7 @@ func NewTelegramBot() (*TelegramBot, error) {
 	if err != nil {
 		panic(err)
 	}
-	finiteStateMachine, err := fsm.Create(fsm.RAM)
+	finiteStateMachine, err := fsm.Create(fsm.RAM{})
 	if err != nil {
 		panic(err)
 	}
