@@ -11,13 +11,14 @@ type Mock struct {
 
 func (Mock) GetIncoming() []domain.Cloth {
 	r := make([]domain.Cloth, 1)
-	r[0] = domain.Cloth{Name: "test", PhotoId: "123", IncomingDate: time.Now(), OutgoingDate: time.Now(), Status: domain.ClothIncoming}
+	r[0] = domain.Cloth{Name: "test", PhotoId: "123", IncomingDate: time.Now(), OutgoingDate: nil, Status: domain.ClothIncoming}
 	return r
 }
 
 func (Mock) GetOutgoing() []domain.Cloth {
 	r := make([]domain.Cloth, 1)
-	r[0] = domain.Cloth{Name: "test", PhotoId: "123", IncomingDate: time.Now(), OutgoingDate: time.Now(), Status: domain.ClothOutgoing}
+	time := time.Now()
+	r[0] = domain.Cloth{Name: "test", PhotoId: "123", IncomingDate: time.Now(), OutgoingDate: &time, Status: domain.ClothOutgoing}
 	return r
 }
 
