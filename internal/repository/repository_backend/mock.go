@@ -24,13 +24,13 @@ func (Mock) GetOutgoing() []domain.Cloth {
 }
 
 func (m Mock) Insert(domain.Cloth) {
-	m.clearRotten()
+	m.ClearRotten()
 }
 
 func (Mock) Out(c domain.Cloth) error {
 	return nil
 }
 
-func (Mock) clearRotten() {}
+func (Mock) ClearRotten() {}
 
 func (Mock) Init() {}

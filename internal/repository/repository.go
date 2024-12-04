@@ -8,5 +8,5 @@ type Cloth interface {
 	Insert(domain.Cloth)
 	Out(domain.Cloth) error
 	Init()
-	clearRotten()
+	ClearRotten()
 }

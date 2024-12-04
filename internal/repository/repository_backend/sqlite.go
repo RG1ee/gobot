@@ -29,7 +29,7 @@ func (s *Sqlite) GetOutgoing() []domain.Cloth {
 
 // Insert implements repository.Cloth.
 func (s *Sqlite) Insert(c domain.Cloth) {
-	s.clearRotten()
+	s.ClearRotten()
 	s.db.Create(c)
 }
 
@@ -39,7 +39,7 @@ func (s *Sqlite) Out(c domain.Cloth) error {
 }
 
 // clearRotten implements repository.Cloth.
-func (s *Sqlite) clearRotten() {
+func (s *Sqlite) ClearRotten() {
 	var cloth domain.Cloth
 	const hours_per_day = 24
 	const days = 7
@@ -48,7 +48,7 @@ func (s *Sqlite) clearRotten() {
 }
 
 func (s *Sqlite) Init() {
-	db, err := gorm.Open(sqlite.Open(s.db_name), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open(s.DB_name), &gorm.Config{})
 	if err != nil {
 		panic("Failed to connect database")
 	}
