@@ -15,11 +15,33 @@ func StartMessageHandler(c tele.Context) error {
 
 func WriteNewClothMessageHandler(c tele.Context) error {
 	fsm := c.Get("fsm").(fsm.FSM)
-	fsm.SetState(uint64(c.Chat().ID), stateconst.StateSendCloth)
-	newState, err := fsm.GetState(uint64(c.Chat().ID))
+	fsm.SetState(uint64(c.Chat().ID), stateconst.StateWaitPhoto)
+
+	return c.Send("Отправьте фото с подписью", reply.CancelKeyboard())
+}
+
+func CancelHandler(c tele.Context) error {
+	fsm := c.Get("fsm").(fsm.FSM)
+	_, err := fsm.GetState(uint64(c.Chat().ID))
+
 	if err != nil {
-		return err
+		return c.Send("Отменять нечего :)")
 	}
 
-	return c.Send(fmt.Sprint(newState))
+	fsm.ClearState(uint64(c.Chat().ID))
+
+	return c.Send("Отменил отправку в химчистку", reply.StartKeyboard())
+}
+
+func GetPhotoClothMessageHandler(c tele.Context) error {
+	// TODO: Add to database photoID and caption
+	// NOTE: Get photo ID
+	// photoId := c.Message().Photo.FileID
+
+	captionText := c.Message().Caption
+	if captionText == "" {
+		return c.Send("Отправьте фотографию с подписью")
+	}
+
+	return c.Send("Сохранил "+fmt.Sprint(captionText), reply.StartKeyboard())
 }
