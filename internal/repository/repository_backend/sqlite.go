@@ -49,10 +49,17 @@ func (s *Sqlite) ClearRotten() {
 
 func (s *Sqlite) Init() {
 	db, err := gorm.Open(sqlite.Open(s.DB_name), &gorm.Config{})
+
 	if err != nil {
-		panic("Failed to connect database")
+		panic(err)
 	}
+	
 	var cloth domain.Cloth
-	db.AutoMigrate(&cloth)
+	err = db.AutoMigrate(&cloth)
+
+	if err != nil {
+		panic(err)
+	}
+
 	s.db = db
 }
