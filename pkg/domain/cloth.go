@@ -10,6 +10,7 @@ const (
 )
 
 type Cloth struct {
+	ID           uint
 	Name         string
 	PhotoId      string
 	IncomingDate time.Time
