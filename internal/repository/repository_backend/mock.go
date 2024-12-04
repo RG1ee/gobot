@@ -1,4 +1,4 @@
-package repository
+package repository_backend
 
 import (
 	"time"
@@ -9,7 +9,8 @@ import (
 type Mock struct {
 }
 
-func (Mock) GetIncoming() []domain.Cloth {
+func (m Mock) GetIncoming() []domain.Cloth {
+
 	r := make([]domain.Cloth, 1)
 	r[0] = domain.Cloth{Name: "test", PhotoId: "123", IncomingDate: time.Now(), OutgoingDate: nil, Status: domain.ClothIncoming}
 	return r
@@ -22,10 +23,14 @@ func (Mock) GetOutgoing() []domain.Cloth {
 	return r
 }
 
-func (Mock) Insert(domain.Cloth) {
-
+func (m Mock) Insert(domain.Cloth) {
+	m.clearRotten()
 }
 
-func (Mock) Out(name string) error {
+func (Mock) Out(c domain.Cloth) error {
 	return nil
 }
+
+func (Mock) clearRotten() {}
+
+func (Mock) Init() {}
