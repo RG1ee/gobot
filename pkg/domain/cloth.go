@@ -13,6 +13,6 @@ type Cloth struct {
 	Name         string
 	PhotoId      string
 	IncomingDate time.Time
-	OutgoingDate time.Time
+	OutgoingDate *time.Time
 	Status       ClothStatus
 }
