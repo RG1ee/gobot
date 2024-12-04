@@ -17,8 +17,8 @@ func (Mock) GetIncoming() []domain.Cloth {
 
 func (Mock) GetOutgoing() []domain.Cloth {
 	r := make([]domain.Cloth, 1)
-	time := time.Now()
-	r[0] = domain.Cloth{Name: "test", PhotoId: "123", IncomingDate: time.Now(), OutgoingDate: &time, Status: domain.ClothOutgoing}
+	t := time.Now()
+	r[0] = domain.Cloth{Name: "test", PhotoId: "123", IncomingDate: time.Now(), OutgoingDate: &t, Status: domain.ClothOutgoing}
 	return r
 }
 
