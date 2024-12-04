@@ -44,7 +44,7 @@ func (s *Sqlite) ClearRotten() {
 	const hours_per_day = 24
 	const days = 7
 	duration := days * hours_per_day
-	s.db.Where("incoming_date >= ?", time.Now().Add(time.Duration(-duration)*time.Hour)).Delete(&cloth)
+	s.db.Where("outgoing_date >= ?", time.Now().Add(time.Duration(-duration)*time.Hour)).Delete(&cloth)
 }
 
 func (s *Sqlite) Init() {
