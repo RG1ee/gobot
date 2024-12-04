@@ -11,3 +11,10 @@ func StartKeyboard() *tele.ReplyMarkup {
 	menu.Reply(menu.Row(sendClothButton, getListClothButton))
 	return menu
 }
+
+func CancelKeyboard() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	cancelButton := menu.Text("Отмена")
+	menu.Reply(menu.Row(cancelButton))
+	return menu
+}

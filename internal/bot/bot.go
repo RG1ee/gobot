@@ -46,6 +46,7 @@ func createBot() (*tele.Bot, error) {
 func (tb *TelegramBot) RegisterHandler() {
 	tb.bot.Use(middleware.FsmMiddleware(tb.fsm))
 	tb.bot.Handle("/start", message.StartMessageHandler)
+	tb.bot.Handle("Отмена", message.CancelHandler)
 	tb.bot.Handle("Отправить в химчистку", message.WriteNewClothMessageHandler)
 	tb.bot.Handle(tele.OnPhoto, handlerdecorator.DecoratorHandle(message.GetPhotoClothMessageHandler, stateconst.StateWaitPhoto))
 }
