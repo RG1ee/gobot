@@ -22,13 +22,12 @@ func WriteNewClothMessageHandler(c tele.Context) error {
 
 func CancelHandler(c tele.Context) error {
 	fsm := c.Get("fsm").(fsm.FSM)
-
 	_, err := fsm.GetState(uint64(c.Chat().ID))
+
 	if err != nil {
 		return c.Send("Отменять нечего :)")
 	}
 
-	// TODO: Add handle the error if there is no state
 	fsm.ClearState(uint64(c.Chat().ID))
 
 	return c.Send("Отменил отправку в химчистку", reply.StartKeyboard())
@@ -39,7 +38,6 @@ func GetPhotoClothMessageHandler(c tele.Context) error {
 	// NOTE: Get photo ID
 	// photoId := c.Message().Photo.FileID
 
-	// NOTE: Get caption
 	captionText := c.Message().Caption
 	if captionText == "" {
 		return c.Send("Отправьте фотографию с подписью")
