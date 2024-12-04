@@ -6,5 +6,7 @@ type Cloth interface {
 	GetIncoming() []domain.Cloth
 	GetOutgoing() []domain.Cloth
 	Insert(domain.Cloth)
-	Out(name string) error
+	Out(domain.Cloth) error
+	Init()
+	clearRotten()
 }
