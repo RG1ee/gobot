@@ -30,7 +30,7 @@ func (s *Sqlite) GetOutgoing() []domain.Cloth {
 // Insert implements repository.Cloth.
 func (s *Sqlite) Insert(c domain.Cloth) {
 	s.ClearRotten()
-	s.db.Create(c)
+	s.db.Create(&c)
 }
 
 // Out implements repository.Cloth.
@@ -53,7 +53,7 @@ func (s *Sqlite) Init() {
 	if err != nil {
 		panic(err)
 	}
-	
+
 	var cloth domain.Cloth
 	err = db.AutoMigrate(&cloth)
 
