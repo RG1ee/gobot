@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/RG1ee/gobot/internal/bot/handlers/callback"
 	"github.com/RG1ee/gobot/internal/bot/handlers/message"
 	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
 	"github.com/RG1ee/gobot/internal/repository"
@@ -56,6 +57,9 @@ func (tb *TelegramBot) RegisterHandler() {
 	tb.bot.Handle("Отмена", message.CancelHandler)
 	tb.bot.Handle("Отправить в химчистку", message.WriteNewClothMessageHandler)
 	tb.bot.Handle("В химчистке", message.GetListIncomingClothMessageHandler)
+	tb.bot.Handle(&tele.Btn{Unique: "next_btn"}, callback.HandlePagination)
+	tb.bot.Handle(&tele.Btn{Unique: "prev_btn"}, callback.HandlePagination)
+	tb.bot.Handle(&tele.Btn{Unique: "outCloth"}, callback.OutgoingClothHandle)
 	tb.bot.Handle(tele.OnPhoto, handlerdecorator.DecoratorHandle(message.GetPhotoClothMessageHandler, stateconst.StateWaitPhoto))
 }
 

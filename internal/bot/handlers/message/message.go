@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/RG1ee/gobot/internal/bot/keyboards/inline"
 	"github.com/RG1ee/gobot/internal/bot/keyboards/reply"
 	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
 	"github.com/RG1ee/gobot/internal/repository"
@@ -59,9 +60,15 @@ func GetPhotoClothMessageHandler(c tele.Context) error {
 
 func GetListIncomingClothMessageHandler(c tele.Context) error {
 	db := c.Get("repository").(repository.Cloth)
+	page := 0
+	pageSize := 1
 
 	allCloth := db.GetIncoming()
+	if len(allCloth) == 0 {
+		return c.Send("Таких вещей нет")
+	}
+	paginationKeyboard := inline.GeneratePaginationKeyboard(allCloth, page, pageSize)
+
 	photo := &tele.Photo{File: tele.File{FileID: allCloth[0].PhotoId}, Caption: allCloth[0].Name}
-	_, err := photo.Send(c.Bot(), c.Chat(), &tele.SendOptions{ReplyMarkup: reply.CancelKeyboard()})
-	return err
+	return c.Send(photo, &tele.SendOptions{ReplyMarkup: paginationKeyboard})
 }
