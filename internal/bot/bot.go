@@ -9,7 +9,7 @@ import (
 	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
 	"github.com/RG1ee/gobot/internal/repository"
 	"github.com/RG1ee/gobot/internal/repository/repository_backend"
-	"github.com/RG1ee/gobot/pkg/handler_decorator"
+	handlerdecorator "github.com/RG1ee/gobot/pkg/handler_decorator"
 	"github.com/RG1ee/gobot/pkg/middleware"
 	"github.com/avi-gecko/fsm/pkg/fsm"
 	tele "gopkg.in/telebot.v3"
@@ -55,8 +55,8 @@ func (tb *TelegramBot) RegisterHandler() {
 	tb.bot.Use(middleware.Repository(tb.db))
 	tb.bot.Handle("/start", message.StartMessageHandler)
 	tb.bot.Handle("Отмена", message.CancelHandler)
-	tb.bot.Handle("Отправить в химчистку", message.WriteNewClothMessageHandler)
-	tb.bot.Handle("В химчистке", message.GetListIncomingClothMessageHandler)
+	tb.bot.Handle("Отправить вещь", message.WriteNewClothMessageHandler)
+	tb.bot.Handle("Отправленные вещи", message.GetListIncomingClothMessageHandler)
 	tb.bot.Handle(&tele.Btn{Unique: "next_btn"}, callback.HandlePagination)
 	tb.bot.Handle(&tele.Btn{Unique: "prev_btn"}, callback.HandlePagination)
 	tb.bot.Handle(&tele.Btn{Unique: "outCloth"}, callback.OutgoingClothHandle)
