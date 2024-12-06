@@ -57,9 +57,12 @@ func (tb *TelegramBot) RegisterHandler() {
 	tb.bot.Handle("Отмена", message.CancelHandler)
 	tb.bot.Handle("Отправить вещь", message.WriteNewClothMessageHandler)
 	tb.bot.Handle("Отправленные вещи", message.GetListIncomingClothMessageHandler)
-	tb.bot.Handle(&tele.Btn{Unique: "next_btn"}, callback.HandlePagination)
-	tb.bot.Handle(&tele.Btn{Unique: "prev_btn"}, callback.HandlePagination)
-	tb.bot.Handle(&tele.Btn{Unique: "outCloth"}, callback.OutgoingClothHandle)
+	tb.bot.Handle("Пришедшие вещи", message.GetListOutgoingClothMessageHandler)
+	tb.bot.Handle(&tele.Btn{Unique: "incoming_next_btn"}, callback.HandleIncomingPagination)
+	tb.bot.Handle(&tele.Btn{Unique: "incoming_prev_btn"}, callback.HandleIncomingPagination)
+	tb.bot.Handle(&tele.Btn{Unique: "next_btn"}, callback.HandleOutgoingPagination)
+	tb.bot.Handle(&tele.Btn{Unique: "prev_btn"}, callback.HandleOutgoingPagination)
+	tb.bot.Handle(&tele.Btn{Unique: "outCloth"}, callback.IncomingClothHandle)
 	tb.bot.Handle(tele.OnPhoto, handlerdecorator.DecoratorHandle(message.GetPhotoClothMessageHandler, stateconst.StateWaitPhoto))
 }
 

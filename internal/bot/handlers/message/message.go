@@ -58,17 +58,31 @@ func GetPhotoClothMessageHandler(c tele.Context) error {
 	return c.Send("Вещь "+fmt.Sprint(captionText)+" отправлена", reply.StartKeyboard())
 }
 
-func GetListIncomingClothMessageHandler(c tele.Context) error {
-	db := c.Get("repository").(repository.Cloth)
+func handleClothList(c tele.Context, getClothFunc func() []domain.Cloth, isOutgoing bool) error {
 	page := 0
 	pageSize := 1
 
-	allCloth := db.GetIncoming()
+	allCloth := getClothFunc()
 	if len(allCloth) == 0 {
-		return c.Send("Таких вещей нет")
+		return c.Send("Нет отправленных вещей")
 	}
-	paginationKeyboard := inline.GeneratePaginationKeyboard(allCloth, page, pageSize)
 
-	photo := &tele.Photo{File: tele.File{FileID: allCloth[0].PhotoId}, Caption: allCloth[0].Name}
+	paginationKeyboard := inline.GeneratePaginationKeyboard(allCloth, page, pageSize, isOutgoing)
+
+	photo := &tele.Photo{
+		File:    tele.File{FileID: allCloth[page].PhotoId},
+		Caption: allCloth[page].Name,
+	}
+
 	return c.Send(photo, &tele.SendOptions{ReplyMarkup: paginationKeyboard})
+}
+
+func GetListIncomingClothMessageHandler(c tele.Context) error {
+	db := c.Get("repository").(repository.Cloth)
+	return handleClothList(c, db.GetIncoming, false)
+}
+
+func GetListOutgoingClothMessageHandler(c tele.Context) error {
+	db := c.Get("repository").(repository.Cloth)
+	return handleClothList(c, db.GetOutgoing, true)
 }

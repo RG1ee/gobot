@@ -7,7 +7,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func GeneratePaginationKeyboard(items []domain.Cloth, page, pageSize int) *tele.ReplyMarkup {
+func GeneratePaginationKeyboard(items []domain.Cloth, page int, pageSize int, isOutgoing bool) *tele.ReplyMarkup {
 	keyboard := &tele.ReplyMarkup{}
 	var rows []tele.Row
 
@@ -18,27 +18,41 @@ func GeneratePaginationKeyboard(items []domain.Cloth, page, pageSize int) *tele.
 	}
 
 	for _, item := range items[start:end] {
-		row := tele.Row{
-			tele.Btn{
-				Unique: "outCloth",
-				Text:   "Вещь " + item.Name + " пришла",
-				Data:   strconv.Itoa(int(item.ID)),
-			},
+		if !isOutgoing {
+			row := tele.Row{
+				tele.Btn{
+					Unique: "outCloth",
+					Text:   "Вещь " + item.Name + " пришла",
+					Data:   strconv.Itoa(int(item.ID)),
+				},
+			}
+			rows = append(rows, row)
 		}
-		rows = append(rows, row)
 	}
 
 	var navRow tele.Row
+
+	var uniquePrevBtn string
+	var uniqueNextBtn string
+
+	if isOutgoing {
+		uniquePrevBtn = "prev_btn"
+		uniqueNextBtn = "next_btn"
+	} else {
+		uniquePrevBtn = "incoming_prev_btn"
+		uniqueNextBtn = "incoming_next_btn"
+	}
+
 	if page > 0 {
 		navRow = append(navRow, tele.Btn{
-			Unique: "prev_btn",
+			Unique: uniquePrevBtn,
 			Text:   "Назад",
 			Data:   strconv.Itoa(page - 1),
 		})
 	}
 	if end < len(items) {
 		navRow = append(navRow, tele.Btn{
-			Unique: "next_btn",
+			Unique: uniqueNextBtn,
 			Text:   "Вперед",
 			Data:   strconv.Itoa(page + 1),
 		})
