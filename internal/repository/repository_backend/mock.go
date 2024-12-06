@@ -23,6 +23,10 @@ func (Mock) GetOutgoing() []domain.Cloth {
 	return r
 }
 
+func (Mock) GetById() domain.Cloth {
+	return domain.Cloth{}
+}
+
 func (m Mock) Insert(domain.Cloth) {
 	m.ClearRotten()
 }
