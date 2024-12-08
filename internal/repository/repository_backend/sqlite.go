@@ -27,6 +27,18 @@ func (s *Sqlite) GetOutgoing() []domain.Cloth {
 	return clothes
 }
 
+// GetById implements repository.Cloth.
+func (s *Sqlite) GetById(id int) (domain.Cloth, error) {
+	var cloth domain.Cloth
+	result := s.db.First(&cloth, id)
+
+	if result.Error != nil {
+		return domain.Cloth{}, result.Error
+	}
+
+	return cloth, nil
+}
+
 // Insert implements repository.Cloth.
 func (s *Sqlite) Insert(c domain.Cloth) {
 	s.ClearRotten()
@@ -43,7 +55,7 @@ func (s *Sqlite) ClearRotten() {
 	const hours_per_day = 24
 	const days = 7
 	duration := days * hours_per_day
-	s.db.Where("outgoing_date >= ?", time.Now().Add(time.Duration(-duration)*time.Hour)).Delete(&domain.Cloth{})
+	s.db.Where("outgoing_date <= ?", time.Now().Add(time.Duration(-duration)*time.Hour)).Delete(&domain.Cloth{})
 }
 
 func (s *Sqlite) Init() {

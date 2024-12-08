@@ -2,9 +2,13 @@ package message
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/RG1ee/gobot/internal/bot/keyboards/inline"
 	"github.com/RG1ee/gobot/internal/bot/keyboards/reply"
 	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
+	"github.com/RG1ee/gobot/internal/repository"
+	"github.com/RG1ee/gobot/pkg/domain"
 	"github.com/avi-gecko/fsm/pkg/fsm"
 	tele "gopkg.in/telebot.v3"
 )
@@ -25,7 +29,7 @@ func CancelHandler(c tele.Context) error {
 	_, err := fsm.GetState(uint64(c.Chat().ID))
 
 	if err != nil {
-		return c.Send("Отменять нечего :)")
+		return c.Send("Отменять нечего :)", reply.StartKeyboard())
 	}
 
 	fsm.ClearState(uint64(c.Chat().ID))
@@ -34,14 +38,51 @@ func CancelHandler(c tele.Context) error {
 }
 
 func GetPhotoClothMessageHandler(c tele.Context) error {
-	// TODO: Add to database photoID and caption
-	// NOTE: Get photo ID
-	// photoId := c.Message().Photo.FileID
+	db := c.Get("repository").(repository.Cloth)
+	fsm := c.Get("fsm").(fsm.FSM)
 
+	photoId := c.Message().Photo.FileID
 	captionText := c.Message().Caption
 	if captionText == "" {
 		return c.Send("Отправьте фотографию с подписью")
 	}
 
-	return c.Send("Сохранил "+fmt.Sprint(captionText), reply.StartKeyboard())
+	insertData := domain.Cloth{
+		Name:         captionText,
+		PhotoId:      photoId,
+		IncomingDate: time.Now(),
+		Status:       domain.ClothIncoming,
+	}
+	db.Insert(insertData)
+	fsm.ClearState(uint64(c.Chat().ID))
+	return c.Send("Вещь "+fmt.Sprint(captionText)+" отправлена", reply.StartKeyboard())
+}
+
+func handleClothList(c tele.Context, getClothFunc func() []domain.Cloth, isOutgoing bool, uniquePrevBtn string, uniqueNextBtn string) error {
+	page := 0
+	pageSize := 1
+
+	allCloth := getClothFunc()
+	if len(allCloth) == 0 {
+		return c.Send("Нет отправленных вещей")
+	}
+
+	paginationKeyboard := inline.GeneratePaginationKeyboard(allCloth, page, pageSize, isOutgoing, uniquePrevBtn, uniqueNextBtn)
+
+	photo := &tele.Photo{
+		File:    tele.File{FileID: allCloth[page].PhotoId},
+		Caption: allCloth[page].Name,
+	}
+
+	return c.Send(photo, &tele.SendOptions{ReplyMarkup: paginationKeyboard})
+}
+
+func GetListIncomingClothMessageHandler(c tele.Context) error {
+	db := c.Get("repository").(repository.Cloth)
+	return handleClothList(c, db.GetIncoming, false, "incoming_prev_btn", "incoming_next_btn")
+}
+
+func GetListOutgoingClothMessageHandler(c tele.Context) error {
+	db := c.Get("repository").(repository.Cloth)
+	return handleClothList(c, db.GetOutgoing, true, "prev_btn", "next_btn")
 }
