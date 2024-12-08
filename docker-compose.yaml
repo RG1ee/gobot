@@ -1,0 +1,10 @@
+services:
+  bot:
+    build: .
+    volumes:
+      - db:/volume
+    environment:
+      - TOKEN
+
+volumes:
+  db:
