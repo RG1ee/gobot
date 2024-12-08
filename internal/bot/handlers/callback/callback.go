@@ -9,7 +9,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func handlePagination(c tele.Context, allCloth []domain.Cloth, emptyMessage string, isOutgoing bool) error {
+func handlePagination(c tele.Context, allCloth []domain.Cloth, emptyMessage string, isOutgoing bool, uniquePrevBtn string, uniqueNextBtn string) error {
 	if len(allCloth) == 0 {
 		c.Delete()
 		return c.Send(emptyMessage)
@@ -21,7 +21,7 @@ func handlePagination(c tele.Context, allCloth []domain.Cloth, emptyMessage stri
 	}
 
 	pageSize := 1
-	paginationKeyboard := inline.GeneratePaginationKeyboard(allCloth, page, pageSize, isOutgoing)
+	paginationKeyboard := inline.GeneratePaginationKeyboard(allCloth, page, pageSize, isOutgoing, uniquePrevBtn, uniqueNextBtn)
 
 	photo := &tele.Photo{
 		File:    tele.File{FileID: allCloth[page].PhotoId},
@@ -33,13 +33,13 @@ func handlePagination(c tele.Context, allCloth []domain.Cloth, emptyMessage stri
 func HandleIncomingPagination(c tele.Context) error {
 	db := c.Get("repository").(repository.Cloth)
 	allCloth := db.GetIncoming()
-	return handlePagination(c, allCloth, "Нет входящих вещей", false)
+	return handlePagination(c, allCloth, "Нет входящих вещей", false, "incoming_prev_btn", "incoming_next_btn")
 }
 
 func HandleOutgoingPagination(c tele.Context) error {
 	db := c.Get("repository").(repository.Cloth)
 	allCloth := db.GetOutgoing()
-	return handlePagination(c, allCloth, "Нет отправленных вещей", true)
+	return handlePagination(c, allCloth, "Нет отправленных вещей", true, "prev_btn", "next_btn")
 }
 
 func IncomingClothHandle(c tele.Context) error {

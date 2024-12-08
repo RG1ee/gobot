@@ -7,7 +7,7 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func GeneratePaginationKeyboard(items []domain.Cloth, page int, pageSize int, isOutgoing bool) *tele.ReplyMarkup {
+func GeneratePaginationKeyboard(items []domain.Cloth, page int, pageSize int, isOutgoing bool, uniquePrevBtn string, uniqueNextBtn string) *tele.ReplyMarkup {
 	keyboard := &tele.ReplyMarkup{}
 	var rows []tele.Row
 
@@ -31,18 +31,6 @@ func GeneratePaginationKeyboard(items []domain.Cloth, page int, pageSize int, is
 	}
 
 	var navRow tele.Row
-
-	var uniquePrevBtn string
-	var uniqueNextBtn string
-
-	if isOutgoing {
-		uniquePrevBtn = "prev_btn"
-		uniqueNextBtn = "next_btn"
-	} else {
-		uniquePrevBtn = "incoming_prev_btn"
-		uniqueNextBtn = "incoming_next_btn"
-	}
-
 	if page > 0 {
 		navRow = append(navRow, tele.Btn{
 			Unique: uniquePrevBtn,
