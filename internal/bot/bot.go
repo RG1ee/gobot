@@ -30,7 +30,7 @@ func NewTelegramBot() (*TelegramBot, error) {
 	if err != nil {
 		panic(err)
 	}
-	db := repository_backend.Sqlite{DB_name: "db"}
+	db := repository_backend.Sqlite{DB_name: "/volume/db"}
 	db.Init()
 	return &TelegramBot{
 		bot: bot,
