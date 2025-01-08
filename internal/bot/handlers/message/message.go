@@ -5,8 +5,11 @@ import (
 	// "time"
 	//
 	// "github.com/RG1ee/gobot/internal/bot/keyboards/inline"
+
 	"github.com/RG1ee/gobot/internal/bot/keyboards/reply"
-	// stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
+	"github.com/avi-gecko/fsm/pkg/fsm"
+
+	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
 	// "github.com/RG1ee/gobot/internal/repository"
 	// "github.com/RG1ee/gobot/pkg/domain"
 	// "github.com/avi-gecko/fsm/pkg/fsm"
@@ -18,13 +21,22 @@ func StartMessageHandler(c tele.Context) ([]tele.Editable, error) {
 	return []tele.Editable{message}, err
 }
 
-// func WriteNewClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
-// 	fsm := c.Get("fsm").(fsm.FSM)
-// 	fsm.SetState(uint64(c.Chat().ID), stateconst.StateWaitPhoto)
-//
-// 	return c.Send("Отправьте фото с подписью", reply.CancelKeyboard())
-// }
-//
+func WriteNewClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+	fsm := c.Get("fsm").(fsm.FSM)
+	result, err := fsm.GetState(uint64(c.Chat().ID))
+	if err != nil {
+		return nil, err
+	}
+	currentState, ok := result.(stateconst.State)
+	if !ok {
+		panic(ok)
+	}
+	currentState.UserState = stateconst.StateWaitPhoto
+	fsm.SetState(uint64(c.Chat().ID), currentState)
+	message, err := c.Bot().Send(c.Chat(), "Отправьте фото с подписью", reply.CancelKeyboard())
+	return []tele.Editable{message}, err
+}
+
 // func CancelHandler(c tele.Context) ([]tele.Editable, error) {
 // 	fsm := c.Get("fsm").(fsm.FSM)
 // 	_, err := fsm.GetState(uint64(c.Chat().ID))

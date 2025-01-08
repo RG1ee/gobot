@@ -27,21 +27,7 @@ func Repository(db_backend repository.Cloth) func(next tele.HandlerFunc) tele.Ha
 	}
 }
 
-// func TestMiddleware() func(next tele.HandlerFunc) tele.HandlerFunc {
-// 	return func(next tele.HandlerFunc) tele.HandlerFunc {
-// 		return func(c tele.Context) error {
-// 			fsm := c.Get("fsm").(fsm.FSM)
-// 			result, err := fsm.GetState(uint64(c.Chat().ID))
-// 			if err == nil {
-// 				return nil
-// 			}
-// 			currentState := result.(stateconst.State)
-// 			return next(c)
-// 		}
-// 	}
-// }
-
-func TestMiddleware() func(next tele.HandlerFunc) tele.HandlerFunc {
+func CleanupMessages() func(next tele.HandlerFunc) tele.HandlerFunc {
 	return func(next tele.HandlerFunc) tele.HandlerFunc {
 		return func(c tele.Context) error {
 			err := next(c)
@@ -54,12 +40,11 @@ func TestMiddleware() func(next tele.HandlerFunc) tele.HandlerFunc {
 				return nil
 			}
 			currentState := result.(stateconst.State)
-			if currentState.PreviousMessages != nil {
+			if currentState.PreviousMessages != nil && len(*currentState.PreviousMessages) > 0 {
 				c.Bot().DeleteMany(*currentState.PreviousMessages)
 			}
 			currentState.PreviousMessages = &currentState.CurrentMessages
 			f.SetState(uint64(c.Chat().ID), currentState)
-			// log.Print(fmt.Sprint(currentState.IsDelete) + " middleware после обработки " + fmt.Sprint(messageId))
 			return nil
 		}
 	}

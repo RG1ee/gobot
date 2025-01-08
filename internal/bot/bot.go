@@ -30,7 +30,9 @@ func NewTelegramBot() (*TelegramBot, error) {
 	if err != nil {
 		panic(err)
 	}
-	db := repository_backend.Sqlite{DB_name: "/volume/db"}
+	// NOTE: for docker
+	// db := repository_backend.Sqlite{DB_name: "/volume/db"}
+	db := repository_backend.Sqlite{DB_name: "db"}
 	db.Init()
 	return &TelegramBot{
 		bot: bot,
@@ -51,12 +53,12 @@ func createBot() (*tele.Bot, error) {
 }
 
 func (tb *TelegramBot) RegisterHandler() {
-	tb.bot.Use(middleware.TestMiddleware())
+	tb.bot.Use(middleware.CleanupMessages())
 	tb.bot.Use(middleware.FsmMiddleware(tb.fsm))
 	tb.bot.Use(middleware.Repository(tb.db))
 	tb.bot.Handle("/start", handlerdecorator.SaveLastMessage(message.StartMessageHandler))
 	// tb.bot.Handle("Отмена", message.CancelHandler)
-	// tb.bot.Handle("Отправить вещь", message.WriteNewClothMessageHandler)
+	tb.bot.Handle("Отправить вещь", handlerdecorator.SaveLastMessage(message.WriteNewClothMessageHandler))
 	// tb.bot.Handle("Отправленные вещи", message.GetListIncomingClothMessageHandler)
 	// tb.bot.Handle("Пришедшие вещи", message.GetListOutgoingClothMessageHandler)
 	// tb.bot.Handle(&tele.Btn{Unique: "incoming_next_btn"}, callback.HandleIncomingPagination)
