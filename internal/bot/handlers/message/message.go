@@ -14,9 +14,6 @@ import (
 	"github.com/avi-gecko/fsm/pkg/fsm"
 
 	"github.com/RG1ee/gobot/pkg/component_middlewares"
-	// "github.com/RG1ee/gobot/internal/repository"
-	// "github.com/RG1ee/gobot/pkg/domain"
-	// "github.com/avi-gecko/fsm/pkg/fsm"
 	tele "gopkg.in/telebot.v3"
 )
 
