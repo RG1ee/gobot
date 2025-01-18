@@ -1,50 +1,67 @@
 package message
 
 import (
-	"fmt"
+	// "fmt"
+	// "time"
+	//
+	"github.com/RG1ee/gobot/internal/bot/keyboards/inline"
+
 	"time"
 
-	"github.com/RG1ee/gobot/internal/bot/keyboards/inline"
 	"github.com/RG1ee/gobot/internal/bot/keyboards/reply"
-	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
 	"github.com/RG1ee/gobot/internal/repository"
 	"github.com/RG1ee/gobot/pkg/domain"
 	"github.com/avi-gecko/fsm/pkg/fsm"
+
+	"github.com/RG1ee/gobot/pkg/component_middlewares"
+	// "github.com/RG1ee/gobot/internal/repository"
+	// "github.com/RG1ee/gobot/pkg/domain"
+	// "github.com/avi-gecko/fsm/pkg/fsm"
 	tele "gopkg.in/telebot.v3"
 )
 
-func StartMessageHandler(c tele.Context) error {
-	return c.Send("Привет! Я бот для химчистки", reply.StartKeyboard())
+func StartMessageHandler(c tele.Context) ([]tele.Editable, error) {
+	message, err := c.Bot().Send(c.Chat(), "Привет! Я бот для химчистки", reply.StartKeyboard())
+	return []tele.Editable{message}, err
 }
 
-func WriteNewClothMessageHandler(c tele.Context) error {
-	fsm := c.Get("fsm").(fsm.FSM)
-	fsm.SetState(uint64(c.Chat().ID), stateconst.StateWaitPhoto)
-
-	return c.Send("Отправьте фото с подписью", reply.CancelKeyboard())
-}
-
-func CancelHandler(c tele.Context) error {
-	fsm := c.Get("fsm").(fsm.FSM)
-	_, err := fsm.GetState(uint64(c.Chat().ID))
-
+func WriteNewClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
+	currentState, err := fsm.GetState(uint64(c.Chat().ID))
 	if err != nil {
-		return c.Send("Отменять нечего :)", reply.StartKeyboard())
+		return nil, err
+	}
+	currentState.UserState = component_middlewares.StateWaitPhoto
+	fsm.SetState(uint64(c.Chat().ID), currentState)
+	message, err := c.Bot().Send(c.Chat(), "Отправьте фото с подписью", reply.CancelKeyboard())
+	return []tele.Editable{message}, err
+}
+
+func CancelHandler(c tele.Context) ([]tele.Editable, error) {
+	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
+	currentState, err := fsm.GetState(uint64(c.Chat().ID))
+	if err != nil {
+		panic(err)
+	}
+	if currentState.UserState == component_middlewares.NullState {
+		message, err := c.Bot().Send(c.Chat(), "Главное меню", reply.StartKeyboard())
+		return []tele.Editable{message}, err
 	}
 
-	fsm.ClearState(uint64(c.Chat().ID))
-
-	return c.Send("Отменил отправку в химчистку", reply.StartKeyboard())
+	fsm.SetState(uint64(c.Chat().ID), currentState)
+	message, err := c.Bot().Send(c.Chat(), "Главное меню", reply.StartKeyboard())
+	return []tele.Editable{message}, err
 }
 
-func GetPhotoClothMessageHandler(c tele.Context) error {
+func GetPhotoClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
 	db := c.Get("repository").(repository.Cloth)
-	fsm := c.Get("fsm").(fsm.FSM)
+	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
 
 	photoId := c.Message().Photo.FileID
 	captionText := c.Message().Caption
 	if captionText == "" {
-		return c.Send("Отправьте фотографию с подписью")
+		message, err := c.Bot().Send(c.Chat(), "Отправьте фото с подписью", reply.CancelKeyboard())
+		return []tele.Editable{message}, err
 	}
 
 	insertData := domain.Cloth{
@@ -54,35 +71,68 @@ func GetPhotoClothMessageHandler(c tele.Context) error {
 		Status:       domain.ClothIncoming,
 	}
 	db.Insert(insertData)
-	fsm.ClearState(uint64(c.Chat().ID))
-	return c.Send("Вещь "+fmt.Sprint(captionText)+" отправлена", reply.StartKeyboard())
+	currentState, _ := fsm.GetState(uint64(c.Chat().ID))
+	currentState.UserState = component_middlewares.NullState
+	fsm.SetState(uint64(c.Chat().ID), currentState)
+	message, err := c.Bot().Send(c.Chat(), "Вещь добавлена успешно", reply.StartKeyboard())
+	return []tele.Editable{message}, err
 }
 
-func handleClothList(c tele.Context, getClothFunc func() []domain.Cloth, isOutgoing bool, uniquePrevBtn string, uniqueNextBtn string) error {
-	page := 0
-	pageSize := 1
+func GetListIncomingClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
+	db := c.Get("repository").(repository.Cloth)
+	db.ClearRotten()
 
-	allCloth := getClothFunc()
+	allCloth := db.GetIncoming()
+	messagesList := []tele.Editable{}
+	currentState, _ := fsm.GetState(uint64(c.Chat().ID))
+	currentState.UserState = component_middlewares.StateSaveChanges
+	fsm.SetState(uint64(c.Chat().ID), currentState)
+
 	if len(allCloth) == 0 {
-		return c.Send("Нет отправленных вещей")
+		message, err := c.Bot().Send(c.Chat(), "Список вещей пуст", reply.StartKeyboard())
+		return []tele.Editable{message}, err
 	}
 
-	paginationKeyboard := inline.GeneratePaginationKeyboard(allCloth, page, pageSize, isOutgoing, uniquePrevBtn, uniqueNextBtn)
+	messageListClothes, _ := c.Bot().Send(c.Chat(), "Список вещей", reply.SaveChangesKeyboard())
+	for _, cloth := range allCloth {
+		photo := &tele.Photo{
+			File:    tele.File{FileID: cloth.PhotoId},
+			Caption: cloth.Name,
+		}
+		message, _ := c.Bot().Send(c.Chat(), photo, inline.DeleteKeyboard(int(cloth.ID)))
+		messagesList = append(messagesList, message, messageListClothes)
+	}
+	return messagesList, nil
+}
 
-	photo := &tele.Photo{
-		File:    tele.File{FileID: allCloth[page].PhotoId},
-		Caption: allCloth[page].Name,
+func GetListOutClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+	db := c.Get("repository").(repository.Cloth)
+	allCloth := db.GetOutgoing()
+	messagesList := []tele.Editable{}
+	for _, cloth := range allCloth {
+		photo := &tele.Photo{
+			File:    tele.File{FileID: cloth.PhotoId},
+			Caption: cloth.Name,
+		}
+		message, _ := c.Bot().Send(c.Chat(), photo, reply.StartKeyboard())
+		messagesList = append(messagesList, message)
+	}
+	return messagesList, nil
+}
+
+func SaveChangesHandler(c tele.Context) ([]tele.Editable, error) {
+	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
+	db := c.Get("repository").(repository.Cloth)
+
+	currentState, _ := fsm.GetState(uint64(c.Chat().ID))
+
+	for _, clothId := range currentState.DeletedIdMessages {
+		clouth, _ := db.GetById(clothId)
+		db.Out(clouth)
 	}
 
-	return c.Send(photo, &tele.SendOptions{ReplyMarkup: paginationKeyboard})
-}
-
-func GetListIncomingClothMessageHandler(c tele.Context) error {
-	db := c.Get("repository").(repository.Cloth)
-	return handleClothList(c, db.GetIncoming, false, "incoming_prev_btn", "incoming_next_btn")
-}
-
-func GetListOutgoingClothMessageHandler(c tele.Context) error {
-	db := c.Get("repository").(repository.Cloth)
-	return handleClothList(c, db.GetOutgoing, true, "prev_btn", "next_btn")
+	message, _ := c.Bot().Send(c.Chat(), "Изменения сохранены", reply.StartKeyboard())
+	messagesList := append(currentState.CurrentMessages, message)
+	return messagesList, nil
 }

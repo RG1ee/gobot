@@ -6,10 +6,9 @@ import (
 
 	"github.com/RG1ee/gobot/internal/bot/handlers/callback"
 	"github.com/RG1ee/gobot/internal/bot/handlers/message"
-	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
 	"github.com/RG1ee/gobot/internal/repository"
 	"github.com/RG1ee/gobot/internal/repository/repository_backend"
-	handlerdecorator "github.com/RG1ee/gobot/pkg/handler_decorator"
+	"github.com/RG1ee/gobot/pkg/component_middlewares"
 	"github.com/RG1ee/gobot/pkg/middleware"
 	"github.com/avi-gecko/fsm/pkg/fsm"
 	tele "gopkg.in/telebot.v3"
@@ -17,7 +16,7 @@ import (
 
 type TelegramBot struct {
 	bot *tele.Bot
-	fsm fsm.FSM
+	fsm fsm.FSM[component_middlewares.State]
 	db  repository.Cloth
 }
 
@@ -26,11 +25,13 @@ func NewTelegramBot() (*TelegramBot, error) {
 	if err != nil {
 		panic(err)
 	}
-	finiteStateMachine, err := fsm.Create(fsm.RAM{})
+	finiteStateMachine, err := fsm.Create[component_middlewares.State](fsm.RAM{})
 	if err != nil {
 		panic(err)
 	}
-	db := repository_backend.Sqlite{DB_name: "/volume/db"}
+	// NOTE: for docker
+	// db := repository_backend.Sqlite{DB_name: "/volume/db"}
+	db := repository_backend.Sqlite{DB_name: "db"}
 	db.Init()
 	return &TelegramBot{
 		bot: bot,
@@ -51,19 +52,18 @@ func createBot() (*tele.Bot, error) {
 }
 
 func (tb *TelegramBot) RegisterHandler() {
-	tb.bot.Use(middleware.FsmMiddleware(tb.fsm))
+	// tb.bot.Use(component_middlewares.CleanupMessages())
+	tb.bot.Use(component_middlewares.FsmMiddleware(tb.fsm))
 	tb.bot.Use(middleware.Repository(tb.db))
-	tb.bot.Handle("/start", message.StartMessageHandler)
-	tb.bot.Handle("Отмена", message.CancelHandler)
-	tb.bot.Handle("Отправить вещь", message.WriteNewClothMessageHandler)
-	tb.bot.Handle("Отправленные вещи", message.GetListIncomingClothMessageHandler)
-	tb.bot.Handle("Пришедшие вещи", message.GetListOutgoingClothMessageHandler)
-	tb.bot.Handle(&tele.Btn{Unique: "incoming_next_btn"}, callback.HandleIncomingPagination)
-	tb.bot.Handle(&tele.Btn{Unique: "incoming_prev_btn"}, callback.HandleIncomingPagination)
-	tb.bot.Handle(&tele.Btn{Unique: "next_btn"}, callback.HandleOutgoingPagination)
-	tb.bot.Handle(&tele.Btn{Unique: "prev_btn"}, callback.HandleOutgoingPagination)
-	tb.bot.Handle(&tele.Btn{Unique: "outCloth"}, callback.IncomingClothHandle)
-	tb.bot.Handle(tele.OnPhoto, handlerdecorator.DecoratorHandle(message.GetPhotoClothMessageHandler, stateconst.StateWaitPhoto))
+	tb.bot.Handle("/start", component_middlewares.SaveLastMessage(message.StartMessageHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Отменить и вернуться в главное меню", component_middlewares.SaveLastMessage(message.CancelHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Отправить вещь", component_middlewares.SaveLastMessage(message.WriteNewClothMessageHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Отправленные вещи", component_middlewares.SaveLastMessage(message.GetListIncomingClothMessageHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Пришедшие вещи", component_middlewares.SaveLastMessage(message.GetListOutClothMessageHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Сохранить изменения", component_middlewares.StateGate(component_middlewares.SaveLastMessage(message.SaveChangesHandler), component_middlewares.StateSaveChanges), component_middlewares.CleanupMessages())
+	tb.bot.Handle(&tele.Btn{Unique: "item_arrived"}, component_middlewares.StateGate(callback.IncomingClothHandle, component_middlewares.StateSaveChanges))
+	tb.bot.Handle(&tele.Btn{Unique: "return_item"}, component_middlewares.StateGate(callback.CancelIncomingClothHandle, component_middlewares.StateSaveChanges))
+	tb.bot.Handle(tele.OnPhoto, component_middlewares.StateGate(component_middlewares.SaveLastMessage(message.GetPhotoClothMessageHandler), component_middlewares.StateWaitPhoto), component_middlewares.CleanupMessages())
 }
 
 func Start() error {

@@ -53,3 +53,31 @@ func GeneratePaginationKeyboard(items []domain.Cloth, page int, pageSize int, is
 
 	return keyboard
 }
+
+func DeleteKeyboard(idCloth int) *tele.ReplyMarkup {
+	keyboard := &tele.ReplyMarkup{}
+	deleteButton := tele.InlineButton{
+		Text:   "Вещь пришла",
+		Unique: "item_arrived",
+		Data:   strconv.Itoa(idCloth),
+	}
+	keyboard.InlineKeyboard = [][]tele.InlineButton{
+		{deleteButton},
+	}
+
+	return keyboard
+}
+
+func ReturnKeyboard(idCloth int) *tele.ReplyMarkup {
+	keyboard := &tele.ReplyMarkup{}
+	deleteButton := tele.InlineButton{
+		Unique: "return_item",
+		Text:   "Отмена",
+		Data:   strconv.Itoa(idCloth),
+	}
+	keyboard.InlineKeyboard = [][]tele.InlineButton{
+		{deleteButton},
+	}
+
+	return keyboard
+}

@@ -69,12 +69,8 @@ github.com/armon/go-metrics v0.0.0-20180917152333-f0300d1749da/go.mod h1:Q73ZrmV
 github.com/armon/go-metrics v0.3.10/go.mod h1:4O98XIr/9W0sxpJ8UaYkvjk10Iff7SnFrb4QAOwNTFc=
 github.com/armon/go-radix v0.0.0-20180808171621-7fddfc383310/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
 github.com/armon/go-radix v1.0.0/go.mod h1:ufUuZ+zHj4x4TnLV4JWEpy2hxWSpsRywHrMgIH9cCH8=
-github.com/avi-gecko/fsm v0.0.0-20241201154944-15a3f7e0948a h1:0iOzgj3HBUtdmKCod1qAjz139NecMl5HunSx0iG0zPI=
-github.com/avi-gecko/fsm v0.0.0-20241201154944-15a3f7e0948a/go.mod h1:2jOCYhpNy45m86gNfsOqin3DNUO9CcIH2sIgDjWGLYI=
-github.com/avi-gecko/fsm v0.0.0-20241201172257-a25ec0788420 h1:Ny4UPTyl3yqTU97EGzmR1V6SSNxgw+RpkQPeI5woZHE=
-github.com/avi-gecko/fsm v0.0.0-20241201172257-a25ec0788420/go.mod h1:2jOCYhpNy45m86gNfsOqin3DNUO9CcIH2sIgDjWGLYI=
-github.com/avi-gecko/fsm v0.0.0-20241204174237-9e81102913b2 h1:08xxAT6t7grcJkM2RE9MM6GEBTq5WdPsjvWwlrTY/9Y=
-github.com/avi-gecko/fsm v0.0.0-20241204174237-9e81102913b2/go.mod h1:2jOCYhpNy45m86gNfsOqin3DNUO9CcIH2sIgDjWGLYI=
+github.com/avi-gecko/fsm v0.0.0-20250117211550-d26e209d9e28 h1:f/b/TnOMcfTLRtMBgwxFcDNkd+s3ppi3PCMlhJCZDDk=
+github.com/avi-gecko/fsm v0.0.0-20250117211550-d26e209d9e28/go.mod h1:2jOCYhpNy45m86gNfsOqin3DNUO9CcIH2sIgDjWGLYI=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+CedLV8=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=

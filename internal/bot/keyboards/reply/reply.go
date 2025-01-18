@@ -15,7 +15,15 @@ func StartKeyboard() *tele.ReplyMarkup {
 
 func CancelKeyboard() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
-	cancelButton := menu.Text("Отмена")
+	cancelButton := menu.Text("Отменить и вернуться в главное меню")
 	menu.Reply(menu.Row(cancelButton))
+	return menu
+}
+
+func SaveChangesKeyboard() *tele.ReplyMarkup {
+	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
+	saveChangesButton := menu.Text("Сохранить изменения")
+	cancelButton := menu.Text("Отменить и вернуться в главное меню")
+	menu.Reply(menu.Row(saveChangesButton, cancelButton))
 	return menu
 }
