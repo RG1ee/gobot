@@ -4,8 +4,11 @@ import (
 	"strconv"
 
 	"github.com/RG1ee/gobot/internal/bot/keyboards/inline"
+	utils_app "github.com/RG1ee/gobot/internal/bot/utils"
 	"github.com/RG1ee/gobot/internal/repository"
+	"github.com/RG1ee/gobot/pkg/component_middlewares"
 	"github.com/RG1ee/gobot/pkg/domain"
+	"github.com/avi-gecko/fsm/pkg/fsm"
 	tele "gopkg.in/telebot.v3"
 )
 
@@ -43,16 +46,39 @@ func HandleOutgoingPagination(c tele.Context) error {
 }
 
 func IncomingClothHandle(c tele.Context) error {
+	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
 	db := c.Get("repository").(repository.Cloth)
 	clothId, _ := strconv.Atoi(c.Callback().Data)
 
-	cloth, err := db.GetById(clothId)
-	if err != nil {
-		return c.Send("Такой записи уже нет")
+	currentState, _ := fsm.GetState(uint64(c.Chat().ID))
+	currentState.DeletedIdMessages = append(currentState.DeletedIdMessages, clothId)
+	fsm.SetState(uint64(c.Chat().ID), currentState)
+
+	photoId, _ := db.GetById(clothId)
+	photo := &tele.Photo{
+		File:    tele.File{FileID: photoId.PhotoId},
+		Caption: "Вещь удалена",
 	}
+	_, err := c.Bot().Edit(c.Message(), photo, &tele.SendOptions{ReplyTo: c.Message(), ReplyMarkup: inline.ReturnKeyboard(clothId)})
+	return err
+}
 
-	db.Out(cloth)
+func CancelIncomingClothHandle(c tele.Context) error {
+	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
+	db := c.Get("repository").(repository.Cloth)
 
-	c.Delete()
-	return c.Send("Вещь " + cloth.Name + " успешное пришла!")
+	clothId, _ := strconv.Atoi(c.Callback().Data)
+	currentState, _ := fsm.GetState(uint64(c.Chat().ID))
+
+	indexId := utils_app.FindIndex(currentState.DeletedIdMessages, clothId)
+	currentState.DeletedIdMessages = append(currentState.DeletedIdMessages[:indexId], currentState.DeletedIdMessages[indexId+1:]...)
+	fsm.SetState(uint64(c.Chat().ID), currentState)
+
+	cloth, _ := db.GetById(clothId)
+	photo := &tele.Photo{
+		File:    tele.File{FileID: cloth.PhotoId},
+		Caption: cloth.Name,
+	}
+	_, err := c.Bot().Edit(c.Message(), photo, &tele.SendOptions{ReplyTo: c.Message(), ReplyMarkup: inline.DeleteKeyboard(clothId)})
+	return err
 }

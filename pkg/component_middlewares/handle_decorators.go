@@ -1,22 +1,17 @@
-package handlerdecorator
+package component_middlewares
 
 import (
-	stateconst "github.com/RG1ee/gobot/internal/bot/state_const"
 	userstate "github.com/RG1ee/gobot/pkg/user_state"
 	"github.com/avi-gecko/fsm/pkg/fsm"
 	tele "gopkg.in/telebot.v3"
 )
 
-func StateHandler(c func(tele.Context) error, state userstate.UserState) func(tele.Context) error {
+func StateGate(c func(tele.Context) error, state userstate.UserState) func(tele.Context) error {
 	return func(ctx tele.Context) error {
-		f := ctx.Get("fsm").(fsm.FSM)
-		result, err := f.GetState(uint64(ctx.Chat().ID))
+		f := ctx.Get("fsm").(fsm.FSM[State])
+		currentState, err := f.GetState(uint64(ctx.Chat().ID))
 		if err != nil {
-			return nil
-		}
-		currentState, ok := result.(stateconst.State)
-		if !ok {
-			panic(ok)
+			panic(err)
 		}
 		if state != currentState.UserState {
 			return nil
@@ -27,13 +22,11 @@ func StateHandler(c func(tele.Context) error, state userstate.UserState) func(te
 
 func SaveLastMessage(c func(tele.Context) ([]tele.Editable, error)) func(tele.Context) error {
 	return func(ctx tele.Context) error {
-		f := ctx.Get("fsm").(fsm.FSM)
+		f := ctx.Get("fsm").(fsm.FSM[State])
 		ctx.Delete()
-		result, err := f.GetState(uint64(ctx.Chat().ID))
-		currentState, _ := result.(stateconst.State)
+		currentState, err := f.GetState(uint64(ctx.Chat().ID))
 		if err != nil {
-			nullState := stateconst.NullState
-			currentState.UserState = nullState
+			currentState.UserState = NullState
 			currentState.PreviousMessages = nil
 			f.SetState(uint64(ctx.Chat().ID), currentState)
 		}
@@ -41,6 +34,7 @@ func SaveLastMessage(c func(tele.Context) ([]tele.Editable, error)) func(tele.Co
 		if err != nil {
 			return err
 		}
+		currentState, _ = f.GetState(uint64(ctx.Chat().ID))
 		currentState.CurrentMessages = messages
 		f.SetState(uint64(ctx.Chat().ID), currentState)
 		return nil
