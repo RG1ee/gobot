@@ -16,12 +16,12 @@ import (
 	tele "gopkg.in/telebot.v3"
 )
 
-func StartMessageHandler(c tele.Context) ([]tele.Editable, error) {
-	message, err := c.Bot().Send(c.Chat(), "Привет! Я бот для химчистки", reply.StartKeyboard())
+func StartHandler(c tele.Context) ([]tele.Editable, error) {
+	message, err := c.Bot().Send(c.Chat(), "Привет! Я бот для того, чтобы отслеживать вещи, которые отправляют в химчистку, на починку или реставрацию.", reply.StartKeyboard())
 	return []tele.Editable{message}, err
 }
 
-func WriteNewClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+func WriteNewClothHandler(c tele.Context) ([]tele.Editable, error) {
 	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
 	currentState, err := fsm.GetState(uint64(c.Chat().ID))
 	if err != nil {
@@ -49,7 +49,7 @@ func CancelHandler(c tele.Context) ([]tele.Editable, error) {
 	return []tele.Editable{message}, err
 }
 
-func GetPhotoClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+func GetPhotoClothHandler(c tele.Context) ([]tele.Editable, error) {
 	db := c.Get("repository").(repository.Cloth)
 	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
 
@@ -74,10 +74,9 @@ func GetPhotoClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
 	return []tele.Editable{message}, err
 }
 
-func GetListIncomingClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+func GetListIncomingClothHandler(c tele.Context) ([]tele.Editable, error) {
 	fsm := c.Get("fsm").(fsm.FSM[component_middlewares.State])
 	db := c.Get("repository").(repository.Cloth)
-	db.ClearRotten()
 
 	allCloth := db.GetIncoming()
 	messagesList := []tele.Editable{}
@@ -90,7 +89,7 @@ func GetListIncomingClothMessageHandler(c tele.Context) ([]tele.Editable, error)
 		return []tele.Editable{message}, err
 	}
 
-	messageListClothes, _ := c.Bot().Send(c.Chat(), "Список вещей", reply.SaveChangesKeyboard())
+	messageListClothes, _ := c.Bot().Send(c.Chat(), "Список отправленных вещей", reply.SaveChangesKeyboard())
 	for _, cloth := range allCloth {
 		photo := &tele.Photo{
 			File:    tele.File{FileID: cloth.PhotoId},
@@ -102,11 +101,30 @@ func GetListIncomingClothMessageHandler(c tele.Context) ([]tele.Editable, error)
 	return messagesList, nil
 }
 
-func GetListOutClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
+func GetListOutgoingClothLastSevenDaysHandler(c tele.Context) ([]tele.Editable, error) {
 	db := c.Get("repository").(repository.Cloth)
-	allCloth := db.GetOutgoing()
+	allCloth := db.GetOutgoingLastSevenDays()
 	if len(allCloth) == 0 {
-		message, err := c.Bot().Send(c.Chat(), "Список пришедших вещей пуст", reply.StartKeyboard())
+		message, err := c.Bot().Send(c.Chat(), "Список пришедших вещей за 7 дней пуст", reply.StartKeyboard())
+		return []tele.Editable{message}, err
+	}
+	messagesList := []tele.Editable{}
+	for _, cloth := range allCloth {
+		photo := &tele.Photo{
+			File:    tele.File{FileID: cloth.PhotoId},
+			Caption: fmt.Sprintf("<b>Название:</b> %s\n<b>Дата и время отправления:</b> %s\n<b>Дата и время прихода:</b> %s", cloth.Name, cloth.IncomingDate.Format("02-01-2006 15:04:05"), cloth.OutgoingDate.Format("02-01-2006 15:04:05")),
+		}
+		message, _ := c.Bot().Send(c.Chat(), photo, reply.StartKeyboard())
+		messagesList = append(messagesList, message)
+	}
+	return messagesList, nil
+}
+
+func GetListOutgoingClothAllTimeHandler(c tele.Context) ([]tele.Editable, error) {
+	db := c.Get("repository").(repository.Cloth)
+	allCloth := db.GetOutgoingLastSevenDays()
+	if len(allCloth) == 0 {
+		message, err := c.Bot().Send(c.Chat(), "Список пришедших вещей за все время пуст", reply.StartKeyboard())
 		return []tele.Editable{message}, err
 	}
 	messagesList := []tele.Editable{}
