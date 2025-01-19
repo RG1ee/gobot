@@ -27,6 +27,13 @@ func (s *Sqlite) GetOutgoing() []domain.Cloth {
 	return clothes
 }
 
+func (s *Sqlite) GetOutgoingLastSevenDays() []domain.Cloth {
+	var clothes []domain.Cloth
+	sevenDaysAgo := time.Now().AddDate(0, 0, -7)
+	s.db.Where("status = ? AND outgoing_date >= ?", domain.ClothOutgoing, sevenDaysAgo).Find(&clothes)
+	return clothes
+}
+
 // GetById implements repository.Cloth.
 func (s *Sqlite) GetById(id int) (domain.Cloth, error) {
 	var cloth domain.Cloth
