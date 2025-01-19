@@ -44,6 +44,7 @@ func createBot() (*tele.Bot, error) {
 	bot, err := tele.NewBot(tele.Settings{
 		Token:  os.Getenv("TOKEN"),
 		Poller: &tele.LongPoller{Timeout: 10 * time.Second},
+		ParseMode: tele.ModeHTML,
 	})
 	if err != nil {
 		return nil, err

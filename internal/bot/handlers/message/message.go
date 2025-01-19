@@ -1,9 +1,8 @@
 package message
 
 import (
-	// "fmt"
-	// "time"
-	//
+	"fmt"
+
 	"github.com/RG1ee/gobot/internal/bot/keyboards/inline"
 
 	"time"
@@ -87,7 +86,7 @@ func GetListIncomingClothMessageHandler(c tele.Context) ([]tele.Editable, error)
 	fsm.SetState(uint64(c.Chat().ID), currentState)
 
 	if len(allCloth) == 0 {
-		message, err := c.Bot().Send(c.Chat(), "Список вещей пуст", reply.StartKeyboard())
+		message, err := c.Bot().Send(c.Chat(), "Список отправленных вещей пуст", reply.StartKeyboard())
 		return []tele.Editable{message}, err
 	}
 
@@ -95,7 +94,7 @@ func GetListIncomingClothMessageHandler(c tele.Context) ([]tele.Editable, error)
 	for _, cloth := range allCloth {
 		photo := &tele.Photo{
 			File:    tele.File{FileID: cloth.PhotoId},
-			Caption: cloth.Name,
+			Caption: fmt.Sprintf("<b>Название:</b> %s\n<b>Дата и время отправления:</b> %s", cloth.Name, cloth.IncomingDate.Format("02-01-2006 15:04:05")),
 		}
 		message, _ := c.Bot().Send(c.Chat(), photo, inline.DeleteKeyboard(int(cloth.ID)))
 		messagesList = append(messagesList, message, messageListClothes)
@@ -106,11 +105,15 @@ func GetListIncomingClothMessageHandler(c tele.Context) ([]tele.Editable, error)
 func GetListOutClothMessageHandler(c tele.Context) ([]tele.Editable, error) {
 	db := c.Get("repository").(repository.Cloth)
 	allCloth := db.GetOutgoing()
+	if len(allCloth) == 0 {
+		message, err := c.Bot().Send(c.Chat(), "Список пришедших вещей пуст", reply.StartKeyboard())
+		return []tele.Editable{message}, err
+	}
 	messagesList := []tele.Editable{}
 	for _, cloth := range allCloth {
 		photo := &tele.Photo{
 			File:    tele.File{FileID: cloth.PhotoId},
-			Caption: cloth.Name,
+			Caption: fmt.Sprintf("<b>Название:</b> %s\n<b>Дата и время отправления:</b> %s\n<b>Дата и время прихода:</b> %s", cloth.Name, cloth.IncomingDate.Format("02-01-2006 15:04:05"), cloth.OutgoingDate.Format("02-01-2006 15:04:05")),
 		}
 		message, _ := c.Bot().Send(c.Chat(), photo, reply.StartKeyboard())
 		messagesList = append(messagesList, message)
