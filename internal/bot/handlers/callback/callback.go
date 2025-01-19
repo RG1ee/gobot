@@ -1,6 +1,7 @@
 package callback
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/RG1ee/gobot/internal/bot/keyboards/inline"
@@ -57,9 +58,9 @@ func IncomingClothHandle(c tele.Context) error {
 	photoId, _ := db.GetById(clothId)
 	photo := &tele.Photo{
 		File:    tele.File{FileID: photoId.PhotoId},
-		Caption: "Вещь удалена",
+		Caption: fmt.Sprintf("%s\nПодтвердите выбор, нажав кнопку <b>Сохранить изменения</b>", photoId.Name),
 	}
-	_, err := c.Bot().Edit(c.Message(), photo, &tele.SendOptions{ReplyTo: c.Message(), ReplyMarkup: inline.ReturnKeyboard(clothId)})
+	_, err := c.Bot().Edit(c.Message(), photo, &tele.SendOptions{ReplyTo: c.Message(), ReplyMarkup: inline.ReturnKeyboard(clothId)}, tele.ModeHTML)
 	return err
 }
 
@@ -77,8 +78,8 @@ func CancelIncomingClothHandle(c tele.Context) error {
 	cloth, _ := db.GetById(clothId)
 	photo := &tele.Photo{
 		File:    tele.File{FileID: cloth.PhotoId},
-		Caption: cloth.Name,
+		Caption: fmt.Sprintf("<b>Название:</b> %s\n<b>Дата и время отправления:</b> %s", cloth.Name, cloth.IncomingDate.Format("02-01-2006 15:04:05")),
 	}
-	_, err := c.Bot().Edit(c.Message(), photo, &tele.SendOptions{ReplyTo: c.Message(), ReplyMarkup: inline.DeleteKeyboard(clothId)})
+	_, err := c.Bot().Edit(c.Message(), photo, &tele.SendOptions{ReplyTo: c.Message(), ReplyMarkup: inline.DeleteKeyboard(clothId)}, tele.ModeHTML)
 	return err
 }

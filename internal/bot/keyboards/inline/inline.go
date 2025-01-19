@@ -72,7 +72,7 @@ func ReturnKeyboard(idCloth int) *tele.ReplyMarkup {
 	keyboard := &tele.ReplyMarkup{}
 	deleteButton := tele.InlineButton{
 		Unique: "return_item",
-		Text:   "Отмена",
+		Text:   "Отменить выбор",
 		Data:   strconv.Itoa(idCloth),
 	}
 	keyboard.InlineKeyboard = [][]tele.InlineButton{
