@@ -8,8 +8,9 @@ func StartKeyboard() *tele.ReplyMarkup {
 	menu := &tele.ReplyMarkup{ResizeKeyboard: true}
 	sendClothButton := menu.Text("Отправить вещь")
 	inDryCleaningClothButton := menu.Text("Отправленные вещи")
-	outDryCleaningClothButton := menu.Text("Пришедшие вещи")
-	menu.Reply(menu.Row(sendClothButton, inDryCleaningClothButton, outDryCleaningClothButton))
+	outDryCleaningClothLastSevenDaysButton := menu.Text("Пришедшие вещи за последние 7 дней")
+	outDryCleaningClothAllTimeButton := menu.Text("Пришедшие вещи за все время")
+	menu.Reply(menu.Row(sendClothButton), menu.Row(inDryCleaningClothButton), menu.Row(outDryCleaningClothLastSevenDaysButton), menu.Row(outDryCleaningClothAllTimeButton))
 	return menu
 }
 
