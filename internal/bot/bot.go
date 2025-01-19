@@ -30,8 +30,9 @@ func NewTelegramBot() (*TelegramBot, error) {
 		panic(err)
 	}
 	// NOTE: for docker
-	// db := repository_backend.Sqlite{DB_name: "/volume/db"}
-	db := repository_backend.Sqlite{DB_name: "db"}
+	db := repository_backend.Sqlite{DB_name: "/volume/db"}
+	// NOTE: for local
+	// db := repository_backend.Sqlite{DB_name: "db"}
 	db.Init()
 	return &TelegramBot{
 		bot: bot,
@@ -56,15 +57,16 @@ func (tb *TelegramBot) RegisterHandler() {
 	// tb.bot.Use(component_middlewares.CleanupMessages())
 	tb.bot.Use(component_middlewares.FsmMiddleware(tb.fsm))
 	tb.bot.Use(middleware.Repository(tb.db))
-	tb.bot.Handle("/start", component_middlewares.SaveLastMessage(message.StartMessageHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("/start", component_middlewares.SaveLastMessage(message.StartHandler), component_middlewares.CleanupMessages())
 	tb.bot.Handle("Отменить и вернуться в главное меню", component_middlewares.SaveLastMessage(message.CancelHandler), component_middlewares.CleanupMessages())
-	tb.bot.Handle("Отправить вещь", component_middlewares.SaveLastMessage(message.WriteNewClothMessageHandler), component_middlewares.CleanupMessages())
-	tb.bot.Handle("Отправленные вещи", component_middlewares.SaveLastMessage(message.GetListIncomingClothMessageHandler), component_middlewares.CleanupMessages())
-	tb.bot.Handle("Пришедшие вещи", component_middlewares.SaveLastMessage(message.GetListOutClothMessageHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Отправить вещь", component_middlewares.SaveLastMessage(message.WriteNewClothHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Отправленные вещи", component_middlewares.SaveLastMessage(message.GetListIncomingClothHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Пришедшие вещи за последние 7 дней", component_middlewares.SaveLastMessage(message.GetListOutgoingClothLastSevenDaysHandler), component_middlewares.CleanupMessages())
+	tb.bot.Handle("Пришедшие вещи за все время", component_middlewares.SaveLastMessage(message.GetListOutgoingClothAllTimeHandler), component_middlewares.CleanupMessages())
 	tb.bot.Handle("Сохранить изменения", component_middlewares.StateGate(component_middlewares.SaveLastMessage(message.SaveChangesHandler), component_middlewares.StateSaveChanges), component_middlewares.CleanupMessages())
 	tb.bot.Handle(&tele.Btn{Unique: "item_arrived"}, component_middlewares.StateGate(callback.IncomingClothHandle, component_middlewares.StateSaveChanges))
 	tb.bot.Handle(&tele.Btn{Unique: "return_item"}, component_middlewares.StateGate(callback.CancelIncomingClothHandle, component_middlewares.StateSaveChanges))
-	tb.bot.Handle(tele.OnPhoto, component_middlewares.StateGate(component_middlewares.SaveLastMessage(message.GetPhotoClothMessageHandler), component_middlewares.StateWaitPhoto), component_middlewares.CleanupMessages())
+	tb.bot.Handle(tele.OnPhoto, component_middlewares.StateGate(component_middlewares.SaveLastMessage(message.GetPhotoClothHandler), component_middlewares.StateWaitPhoto), component_middlewares.CleanupMessages())
 }
 
 func Start() error {
